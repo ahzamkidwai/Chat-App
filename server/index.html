@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Socket.IO Chat Client</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f1f1f1;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+      }
+
+      #chat-box {
+        width: 100%;
+        max-width: 600px;
+        margin-top: 50px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+      }
+
+      h1 {
+        margin-top: 0;
+        text-align: center;
+        font-size: 1.8rem;
+        color: #333;
+      }
+
+      #phone-area {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 10px;
+      }
+
+      #phoneInput {
+        flex: 1;
+        padding: 0.7rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+
+      #registerBtn {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      #messages {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 1rem;
+        background-color: #fafafa;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message {
+        max-width: 75%;
+        padding: 10px 15px;
+        border-radius: 20px;
+        background-color: #d1e7dd;
+        color: #0f5132;
+        align-self: flex-start;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+      }
+
+      .message.self {
+        background-color: #cfe2ff;
+        color: #084298;
+        align-self: flex-end;
+      }
+
+      #input-area {
+        display: flex;
+        gap: 10px;
+      }
+
+      #messageInput {
+        flex: 1;
+        padding: 0.7rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+        transition: border 0.2s ease-in-out;
+      }
+
+      #messageInput:focus {
+        border-color: #007bff;
+      }
+
+      #sendBtn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      #sendBtn:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-box">
+      <h1>Chat with 8562352254</h1>
+
+      <div id="phone-area">
+        <input
+          type="text"
+          id="phoneInput"
+          placeholder="Enter your phone number..."
+        />
+        <button id="registerBtn">Register</button>
+      </div>
+
+      <div id="messages"></div>
+
+      <div id="input-area">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message..."
+        />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+
+    <script>
+      const socket = io("http://localhost:3000");
+
+      let myPhoneNumber = "";
+      let mySocketId = null;
+
+      const inputField = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendBtn");
+      const chatBox = document.getElementById("messages");
+
+      const phoneInput = document.getElementById("phoneInput");
+      const registerBtn = document.getElementById("registerBtn");
+
+      registerBtn.addEventListener("click", () => {
+        const number = phoneInput.value.trim();
+        if (number) {
+          myPhoneNumber = number;
+          socket.emit("register-user", myPhoneNumber);
+          alert(`✅ Registered as: ${myPhoneNumber}`);
+        } else {
+          alert("Please enter your phone number");
+        }
+      });
+
+      socket.on("connect", () => {
+        mySocketId = socket.id;
+        console.log("Connected with socket ID:", mySocketId);
+      });
+
+      socket.on("private-message", (data) => {
+        const newMessage = document.createElement("div");
+        newMessage.classList.add("message");
+
+        if (data.sender === mySocketId) {
+          newMessage.classList.add("self");
+        }
+
+        newMessage.textContent = data.message;
+        chatBox.appendChild(newMessage);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      socket.on("private-message-failed", (data) => {
+        alert("❌ Message failed: " + data.error);
+      });
+
+      function sendMessage() {
+        const messageText = inputField.value.trim();
+        const toPhoneNumber = "8562352254"; // recipient
+
+        if (!myPhoneNumber) {
+          alert("Please register with your phone number first.");
+          return;
+        }
+
+        if (messageText !== "") {
+          socket.emit("private-message", {
+            toPhoneNumber,
+            message: messageText,
+          });
+          inputField.value = "";
+        }
+      }
+
+      sendButton.addEventListener("click", sendMessage);
+      inputField.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      });
+    </script>
+  </body>
+</html>
