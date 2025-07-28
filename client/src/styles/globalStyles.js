@@ -12,6 +12,9 @@ const globalStyles = {
     border: "#3b82f6", // blue-500
     danger: "#dc2626", // red-600
 
+    // ✅ New success color
+    success: "#16a34a", // green-600
+
     // 👇 New additions for tabs
     tabActiveBg: "#eff6ff", // blue-50
     tabInactiveBg: "#f9fafb", // gray-50

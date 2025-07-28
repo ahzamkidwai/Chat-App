@@ -94,8 +94,9 @@ const SignUpForm = () => {
       }
       const data = await response.json();
       console.log("Registration successful:", data);
+      localStorage.setItem("userPhone", formData.phoneNumber);
       setTimeout(() => {
-        router.push("/login");
+        router.push("/verify-otp");
       }, 1500);
     } catch (error: any) {
       const errorMessage =
