@@ -26,6 +26,7 @@ const SignUpForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -71,11 +72,35 @@ const SignUpForm = () => {
 
     setLoading(true);
     try {
+      const payload = {
+        phoneNumber: formData.phoneNumber,
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      };
+      const response = await fetch(`${API_URL}/register-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      console.log("Response:", response);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
+      const data = await response.json();
+      console.log("Registration successful:", data);
       setTimeout(() => {
         router.push("/login");
       }, 1500);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (error: any) {
+      const errorMessage =
+        error?.message || "Something went wrong. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -146,7 +171,7 @@ const SignUpForm = () => {
           </CardTitle>
         </CardHeader>
 
-        <CardContent>
+        <div>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <Label htmlFor="phoneNumber" className="mb-1 block">
@@ -286,7 +311,7 @@ const SignUpForm = () => {
               Log in
             </span>
           </p>
-        </CardContent>
+        </div>
       </div>
     </div>
   );

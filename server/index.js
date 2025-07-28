@@ -7,6 +7,7 @@ import http from "http";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
+import cors from "cors";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,10 +15,19 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ quiet: true });
 const PORT = process.env.PORT;
 
+const corsOptions = {
+  origin: "http://localhost:3001",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  // allowedHeaders: ["Content-Type", "Authorization"],
+  // exposedHeaders: ["Authorization"],
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/v1", authRoutes);
 app.use("/api/v1/users", userRoutes);
