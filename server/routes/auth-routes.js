@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllUsers,
+  loginUser,
   registerUser,
   updateUserDetails,
   verifyOTP,
@@ -13,6 +14,7 @@ router.get("/", (req, res) => {
 });
 
 router.post("/register-user", registerUser);
+router.post("/login-user", loginUser);
 router.post("/verify-otp", verifyOTP);
 router.put("/update-user/:id", updateUserDetails);
 router.get("/get-all-users", getAllUsers);

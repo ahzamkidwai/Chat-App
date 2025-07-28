@@ -70,16 +70,18 @@ const SignInForm = () => {
 
     setLoading(true);
     try {
-      const payload =
-        loginMethod === "phone"
-          ? { phoneNumber: formData.phoneNumber, password: formData.password }
-          : { email: formData.email, password: formData.password };
+      const payload = {
+        loginId:
+          loginMethod === "phone" ? formData.phoneNumber : formData.email,
+        password: formData.password,
+      };
 
       const response = await fetch(`${API_URL}/login-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 

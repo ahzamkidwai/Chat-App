@@ -180,3 +180,108 @@ export const getAllUsers = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const loginUser = async (req, res) => {
+  try {
+    const { loginId, password } = req.body;
+    console.log("Login attempt with:", { loginId, password });
+
+    if (!loginId?.trim() || !password?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number/email and password are required",
+      });
+    }
+
+    const isEmail = loginId.includes("@");
+    if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginId.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid email address",
+      });
+    }
+
+    if (!isEmail && !/^\d{10,15}$/.test(loginId.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid phone number (10-15 digits)",
+      });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        { email: isEmail ? loginId.trim().toLowerCase() : undefined },
+        { phoneNumber: !isEmail ? loginId.trim() : undefined },
+      ],
+    }).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please check your credentials or register.",
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Account not verified. Please verify your account first.",
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      password.trim(),
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials. Please check your password.",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
+      },
+      process.env.JWT_SECRET, // ensure JWT_SECRET is defined in your env
+      { expiresIn: "7d" }
+    );
+
+    const userResponse = {
+      _id: user._id,
+      phoneNumber: user.phoneNumber,
+      firstName: user.firstName,
+      middleName: user.middleName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      email: user.email,
+      profilePhoto: user.profilePhoto,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    // ✅ Set HTTP-only secure cookie
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: userResponse, // ❌ Do not send token in JSON for added security
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

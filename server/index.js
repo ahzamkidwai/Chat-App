@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,14 +20,13 @@ const corsOptions = {
   origin: "http://localhost:3001",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
-  // allowedHeaders: ["Content-Type", "Authorization"],
-  // exposedHeaders: ["Authorization"],
 };
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/v1", authRoutes);
@@ -36,20 +36,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-// io.on("connection", (socket) => {
-//   console.log("✅ A user connected:", socket.id);
-
-//   socket.on("chat-message", (message) => {
-//     console.log("📨", socket.id, ":", message);
-//     io.emit("chat-message", { message, sender: socket.id });
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("❌ User disconnected:", socket.id);
-//   });
-// });
-
-const usersMap = new Map(); // Map<phoneNumber, socket.id>
+const usersMap = new Map();
 
 io.on("connection", (socket) => {
   console.log("✅ A user connected:", socket.id);
@@ -75,7 +62,6 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("❌ User disconnected:", socket.id);
-    // Remove user from map
     for (const [phone, id] of usersMap.entries()) {
       if (id === socket.id) {
         usersMap.delete(phone);
