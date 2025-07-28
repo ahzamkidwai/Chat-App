@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import globalStyles from "@/styles/globalStyles";
+import SvgLogo from "./shared/SvgLogo";
 
 const { colors } = globalStyles;
 
@@ -16,23 +17,7 @@ const LandingPage = () => {
     >
       <header className="flex items-center justify-between mb-12">
         <div className="flex items-center gap-3">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={globalStyles.colors.primary}
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <circle cx="9" cy="10" r="1" />
-            <circle cx="13" cy="10" r="1" />
-            <circle cx="17" cy="10" r="1" />
-          </svg>
+          <SvgLogo />
           <h1 className="text-2xl font-bold" style={{ color: colors.text }}>
             Chat-App
           </h1>
