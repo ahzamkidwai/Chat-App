@@ -1,5 +1,3 @@
-// src/styles/globalStyles.js
-
 const globalStyles = {
   colors: {
     primary: "#2563eb", // blue-600
@@ -13,6 +11,11 @@ const globalStyles = {
     lightText: "#f3f4f6", // gray-100
     border: "#3b82f6", // blue-500
     danger: "#dc2626", // red-600
+
+    // 👇 New additions for tabs
+    tabActiveBg: "#eff6ff", // blue-50
+    tabInactiveBg: "#f9fafb", // gray-50
+    tabBorder: "#3b82f6", // blue-500
   },
 };
 
