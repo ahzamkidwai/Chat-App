@@ -1,15 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import globalStyles from "@/styles/globalStyles";
+import SvgLogo from "./SvgLogo";
 
 const NavigationBar = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
-  const { primary, border, danger, text, lightText } = globalStyles.colors;
+  const { colors } = globalStyles;
 
   const handleLogout = async () => {
     setLoading(true);
@@ -26,54 +27,47 @@ const NavigationBar = () => {
 
   return (
     <nav
+      className="w-full px-6 sm:px-12 py-4 flex items-center justify-between border-b"
       style={{
-        backgroundColor: globalStyles.colors.gradientFrom,
-        borderBottom: `2px solid ${border}`,
-        padding: "1rem 2rem",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
+        background: `linear-gradient(to right, ${colors.gradientFrom}, ${colors.background}, ${colors.gradientTo})`,
+        borderBottomColor: colors.border,
       }}
     >
-      <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: primary }}>
-        ChatBot
+      {/* Left side - Logo */}
+      <div className="flex items-center gap-3">
+        <SvgLogo />
+        <span
+          className="text-xl sm:text-2xl font-bold"
+          style={{ color: colors.primary }}
+        >
+          Chat-App
+        </span>
       </div>
 
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        <Link
-          href="/dashboard"
-          style={{
-            backgroundColor: globalStyles.colors.tabInactiveBg,
-            color: text,
-            padding: "0.5rem 1rem",
-            borderRadius: "0.375rem",
-            textDecoration: "none",
-          }}
-        >
-          Dashboard
-        </Link>
+      {/* Right side - Links and Logout */}
+      <div className="flex items-center gap-4">
+        {/* <Link href="/dashboard">
+          <Button
+            variant="ghost"
+            className="hover:underline"
+            style={{
+              backgroundColor: colors.tabInactiveBg,
+              color: colors.text,
+            }}
+          >
+            Dashboard
+          </Button>
+        </Link> */}
 
-        <button
+        <Button
           onClick={handleLogout}
           disabled={loading}
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem",
-            borderRadius: "0.375rem",
-            backgroundColor: danger,
-            color: lightText,
+            backgroundColor: colors.danger,
+            color: colors.lightText,
             opacity: loading ? 0.7 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "background-color 0.3s ease",
           }}
-          onMouseEnter={(e) => {
-            if (!loading) e.currentTarget.style.backgroundColor = "#b91c1c"; // dark red
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = danger;
-          }}
+          className="flex items-center gap-2"
         >
           {loading && (
             <span
@@ -88,9 +82,10 @@ const NavigationBar = () => {
             />
           )}
           {loading ? "Logging out..." : "Logout"}
-        </button>
+        </Button>
       </div>
 
+      {/* Spinner keyframes */}
       <style jsx>{`
         @keyframes spin {
           to {
