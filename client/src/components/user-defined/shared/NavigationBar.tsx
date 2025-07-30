@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import globalStyles from "@/styles/globalStyles";
 import SvgLogo from "./SvgLogo";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Settings, LogOut } from "lucide-react";
 
 const NavigationBar = () => {
   const router = useRouter();
@@ -27,65 +35,55 @@ const NavigationBar = () => {
 
   return (
     <nav
-      className="w-full px-6 sm:px-12 py-4 flex items-center justify-between border-b"
+      className="w-full px-4 sm:px-10 py-4 flex items-center justify-between border-b shadow-sm"
       style={{
         background: `linear-gradient(to right, ${colors.gradientFrom}, ${colors.background}, ${colors.gradientTo})`,
         borderBottomColor: colors.border,
       }}
     >
-      {/* Left side - Logo */}
       <div className="flex items-center gap-3">
         <SvgLogo />
         <span
-          className="text-xl sm:text-2xl font-bold"
+          className="text-xl sm:text-2xl font-bold tracking-tight"
           style={{ color: colors.primary }}
         >
           Chat-App
         </span>
       </div>
 
-      {/* Right side - Links and Logout */}
       <div className="flex items-center gap-4">
-        {/* <Link href="/dashboard">
-          <Button
-            variant="ghost"
-            className="hover:underline"
-            style={{
-              backgroundColor: colors.tabInactiveBg,
-              color: colors.text,
-            }}
-          >
-            Dashboard
-          </Button>
-        </Link> */}
-
-        <Button
-          onClick={handleLogout}
-          disabled={loading}
-          style={{
-            backgroundColor: colors.danger,
-            color: colors.lightText,
-            opacity: loading ? 0.7 : 1,
-          }}
-          className="flex items-center gap-2"
-        >
-          {loading && (
-            <span
-              style={{
-                width: "1rem",
-                height: "1rem",
-                border: "2px solid white",
-                borderTopColor: "transparent",
-                borderRadius: "9999px",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-          )}
-          {loading ? "Logging out..." : "Logout"}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-primary transition">
+              <AvatarImage src="/profile.jpg" alt="Profile" />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 shadow-lg">
+            <DropdownMenuLabel className="flex items-center gap-2 text-sm font-medium">
+              <User size={16} />
+              Username
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => router.push("/profile")}
+              className="cursor-pointer"
+            >
+              <Settings size={16} className="mr-2" />
+              Edit Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleLogout}
+              disabled={loading}
+              className="cursor-pointer text-red-600 focus:text-red-600"
+            >
+              <LogOut size={16} className="mr-2" />
+              {loading ? "Logging out..." : "Logout"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* Spinner keyframes */}
       <style jsx>{`
         @keyframes spin {
           to {
