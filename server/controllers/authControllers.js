@@ -240,6 +240,12 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error(
+        "JWT_SECRET is not defined in the environment variables."
+      );
+    }
+
     const token = jwt.sign(
       {
         id: user._id,
@@ -270,6 +276,7 @@ export const loginUser = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
     });
 
     return res.status(200).json({

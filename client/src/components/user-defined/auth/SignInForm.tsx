@@ -13,6 +13,7 @@ import SvgLogo from "../shared/SvgLogo";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "@/redux/slices/userSlice";
 import { AppDispatch } from "@/redux/store/store";
+import { loginUser } from "@/services/authService";
 
 const SignInForm = () => {
   const router = useRouter();
@@ -74,27 +75,12 @@ const SignInForm = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        loginId:
-          loginMethod === "phone" ? formData.phoneNumber : formData.email,
-        password: formData.password,
-      };
+      const loginId =
+        loginMethod === "phone" ? formData.phoneNumber : formData.email;
 
-      const response = await fetch(`${API_URL}/login-user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed.");
-      }
-
+      const data = await loginUser(loginId, formData.password);
       console.log("Login successful:", data);
+
       dispatch(
         setUserDetails({
           username: data?.user?.fullName,
