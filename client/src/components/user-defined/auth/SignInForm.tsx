@@ -10,12 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import globalStyles from "@/styles/globalStyles";
 import SvgLogo from "../shared/SvgLogo";
+import { useDispatch } from "react-redux";
+import { setUserDetails } from "@/redux/slices/userSlice";
+import { AppDispatch } from "@/redux/store/store";
 
 const SignInForm = () => {
   const router = useRouter();
   const colors = globalStyles.colors;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
+  const dispatch = useDispatch<AppDispatch>();
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("phone");
   const [formData, setFormData] = useState({
     phoneNumber: "",
@@ -92,6 +95,14 @@ const SignInForm = () => {
       }
 
       console.log("Login successful:", data);
+      dispatch(
+        setUserDetails({
+          username: data?.user?.fullName,
+          email: data?.user?.email,
+          phoneNumber: data?.user?.phoneNumber,
+        })
+      );
+
       router.push("/");
     } catch (err: any) {
       setError(err.message || "Something went wrong.");

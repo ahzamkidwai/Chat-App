@@ -13,12 +13,16 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store/store";
 
 const NavigationBar = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { colors } = globalStyles;
+  const username = useSelector((state: RootState) => state.user.username);
+  console.log("Username from Redux:", username);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -31,6 +35,16 @@ const NavigationBar = () => {
       console.error("Logout error:", err);
       setLoading(false);
     }
+  };
+
+  const getInitialsFromFullName = (fullName: string) => {
+    if (!fullName) return "U"; // fallback
+
+    const nameParts = fullName.trim().split(" ");
+    const first = nameParts[0]?.charAt(0).toUpperCase() || "";
+    const last = nameParts[nameParts.length - 1]?.charAt(0).toUpperCase() || "";
+
+    return `${first}${last}`;
   };
 
   return (
@@ -54,15 +68,21 @@ const NavigationBar = () => {
       <div className="flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar className="w-10 h-10 cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-primary transition">
-              <AvatarImage src="/profile.jpg" alt="Profile" />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-1 cursor-pointer hover:ring-offset-1 hover:ring-primary transition">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src="/profile.jpg" alt="Profile" />
+                <AvatarFallback>
+                  {getInitialsFromFullName(username)}
+                </AvatarFallback>
+              </Avatar>
+              <ChevronDown size={18} className="text-muted-foreground" />
+            </div>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end" className="w-48 shadow-lg">
             <DropdownMenuLabel className="flex items-center gap-2 text-sm font-medium">
               <User size={16} />
-              Username
+              {username || "Username"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem

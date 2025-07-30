@@ -1,6 +1,7 @@
 import Sidebar from "@/components/user-defined/shared/Sidebar";
 import "./globals.css";
-import { cookies } from "next/headers"; // You missed this import
+import { cookies } from "next/headers";
+import ReduxProvider from "@/redux/ReduxProvider";
 
 export default async function RootLayout({
   children,
@@ -14,8 +15,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="flex min-h-screen">
-        {isAuthenticated && <Sidebar />}
-        <main className="flex-1">{children}</main>
+        <ReduxProvider>
+          {isAuthenticated && <Sidebar />}
+          <main className="flex-1">{children}</main>
+        </ReduxProvider>
       </body>
     </html>
   );
