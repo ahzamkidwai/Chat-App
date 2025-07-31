@@ -28,9 +28,9 @@ const NavigationBar = () => {
     setLoading(true);
     try {
       await fetch("/api/logout");
-      setTimeout(() => {
-        router.refresh();
-      }, 1000);
+      // setTimeout(() => {
+      router.refresh();
+      // }, 1000);
     } catch (err) {
       console.error("Logout error:", err);
       setLoading(false);
