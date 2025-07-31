@@ -14,7 +14,7 @@ export default async function RootLayout({
   const isAuthenticated = !!token;
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="flex min-h-screen">
         <ReduxProvider>
           <TokenSync token={token} />
