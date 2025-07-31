@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Camera, Pencil, Trash2 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store/store";
+import { useRouter } from "next/navigation";
+import { editUserProfile } from "@/services/userService";
+import { EditUserProfileRequest } from "@/types/userProfile";
 
 const EditUserProfile = () => {
+  const router = useRouter();
+
   // Profile image
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -32,33 +39,81 @@ const EditUserProfile = () => {
     }
   };
 
+  const token = useSelector((state: RootState) => state.user.token);
+
   const handleImageDelete = () => setProfileImage(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const basicProfile = {
-      profileImage,
-      firstName,
-      middleName,
-      lastName,
-      email,
-      phone,
+    const requestBody: EditUserProfileRequest = {
+      personal_details: {
+        firstName,
+        middleName,
+        lastName,
+        dob: dateOfBirth,
+      },
+      contact_information: {
+        email,
+        phone,
+        city,
+        country,
+      },
+      professional_details: {
+        occupation,
+        website,
+      },
+      additional_information: {
+        statusMessage: status,
+        bio,
+      },
     };
 
-    const extendedProfile = {
-      occupation,
-      dateOfBirth,
-      bio,
-      website,
-      city,
-      country,
-      status,
-    };
+    console.log("📦 Final request body:", requestBody);
 
-    console.log("Basic Profile:", basicProfile);
-    console.log("Extended Profile:", extendedProfile);
+    try {
+      const data = await editUserProfile(token ?? "", requestBody);
+      console.log("✅ Profile updated successfully:", data);
+      router.push("/");
+    } catch (error) {
+      console.error("❌ Error updating profile:", error);
+    }
   };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // ✅ Add your JWT token here
+            },
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch user profile");
+        }
+        console.log("User Profile:", data);
+        setFirstName(data.profile?.personal_details?.firstName || "");
+        setMiddleName(data.profile?.personal_details?.middleName || "");
+        setLastName(data.profile?.personal_details?.lastName || "");
+        setDateOfBirth(data.profile?.personal_details?.dob || "");
+        setEmail(data.profile?.contact_information?.email || "");
+        setPhone(data.profile?.contact_information?.phone || "");
+        setCity(data.profile?.contact_information?.city || "");
+        setCountry(data.profile?.contact_information?.country || "");
+        setOccupation(data.profile?.professional_details?.occupation || "");
+        setWebsite(data.profile?.professional_details?.website || "");
+        setStatus(data.profile?.additional_information?.statusMessage || "");
+        setBio(data.profile?.additional_information?.bio || "");
+      } catch (error) {}
+    };
+    fetchUserData();
+  }, []);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
