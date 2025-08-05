@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     "/profile",
     "/dashboard",
     "/settings",
-    "/verify-otp",
+    // "/verify-otp",
   ]; // Add any other protected routes here
 
   if (token && authPages.includes(pathname)) {
