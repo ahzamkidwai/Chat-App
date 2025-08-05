@@ -8,7 +8,7 @@ interface EditUserProfileParams {
 export const editUserProfile = async (
   token: string,
   requestBody: EditUserProfileRequest
-): Promise<void> => {
+): Promise<EditUserProfileRequest> => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`,
     {
@@ -28,4 +28,5 @@ export const editUserProfile = async (
   }
 
   console.log("✅ Profile updated:", data.profile);
+  return data.profile;
 };

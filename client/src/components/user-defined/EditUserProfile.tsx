@@ -2,15 +2,16 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Camera, Pencil, Trash2 } from "lucide-react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store/store";
 import { useRouter } from "next/navigation";
 import { editUserProfile } from "@/services/userService";
 import { EditUserProfileRequest } from "@/types/userProfile";
+import { setUserDetails } from "@/redux/slices/userSlice";
 
 const EditUserProfile = () => {
   const router = useRouter();
-
+  const dispatch = useDispatch<AppDispatch>();
   // Profile image
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -73,7 +74,17 @@ const EditUserProfile = () => {
 
     try {
       const data = await editUserProfile(token ?? "", requestBody);
+
       console.log("✅ Profile updated successfully:", data);
+      const fullName = `${data.personal_details.firstName} ${data.personal_details.lastName}`;
+
+      dispatch(
+        setUserDetails({
+          username: fullName,
+          email: data.contact_information.email,
+          phoneNumber: data.contact_information.phone,
+        })
+      );
       router.push("/");
     } catch (error) {
       console.error("❌ Error updating profile:", error);

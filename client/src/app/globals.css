@@ -116,7 +116,24 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.status-online {
+  color: green;
+}
+
+.status-idle {
+  color: orange;
+}
+
+.status-dnd {
+  color: red;
+}
+
+.status-offline {
+  color: gray;
 }
