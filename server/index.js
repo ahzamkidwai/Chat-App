@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/connectDatabase.js";
 import authRoutes from "./routes/auth-routes.js";
 import userRoutes from "./routes/user-routes.js";
+import uploadRoutes from "./routes/upload-routes.js";
 import http from "http";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -31,6 +31,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/v1", authRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/uploads", uploadRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
