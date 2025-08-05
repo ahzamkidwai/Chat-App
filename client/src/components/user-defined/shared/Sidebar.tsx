@@ -90,12 +90,23 @@ const Sidebar = () => {
     }
   };
 
+  // const getInitialsFromFullName = (fullName: string) => {
+  //   if (!fullName) return "U";
+  //   const nameParts = fullName.trim().split(" ");
+  //   const first = nameParts[0]?.charAt(0).toUpperCase() || "";
+  //   const last = nameParts[nameParts.length - 1]?.charAt(0).toUpperCase() || "";
+  //   return `${first}${last}`;
+  // };
+
   const getInitialsFromFullName = (fullName: string) => {
     if (!fullName) return "U";
-    const nameParts = fullName.trim().split(" ");
-    const first = nameParts[0]?.charAt(0).toUpperCase() || "";
-    const last = nameParts[nameParts.length - 1]?.charAt(0).toUpperCase() || "";
-    return `${first}${last}`;
+
+    const nameParts = fullName.trim().split(/\s+/); // handles multiple spaces
+    const initials = nameParts
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("");
+
+    return initials;
   };
 
   const {

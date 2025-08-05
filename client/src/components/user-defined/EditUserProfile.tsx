@@ -76,7 +76,7 @@ const EditUserProfile = () => {
       const data = await editUserProfile(token ?? "", requestBody);
 
       console.log("✅ Profile updated successfully:", data);
-      const fullName = `${data.personal_details.firstName} ${data.personal_details.lastName}`;
+      const fullName = `${data.personal_details.firstName} ${data.personal_details.middleName} ${data.personal_details.lastName}`;
 
       dispatch(
         setUserDetails({
@@ -105,6 +105,7 @@ const EditUserProfile = () => {
           }
         );
         const data = await response.json();
+        console.log("Fetched User Data:", data);
         if (!response.ok) {
           throw new Error(data.message || "Failed to fetch user profile");
         }
