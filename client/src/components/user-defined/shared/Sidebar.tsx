@@ -59,23 +59,28 @@ const Sidebar = () => {
 
   return (
     <aside
-      className="w-72 min-h-screen border-r px-4 py-6 flex flex-col justify-between"
+      className="fixed top-0 left-0 w-72 min-h-screen border-r px-4 py-6 flex flex-col"
       style={{
         backgroundColor: sidebarBg,
         borderRightColor: sidebarBorder,
         color: sidebarText,
       }}
     >
-      <div>
+      {/* Top content */}
+      <div className="flex-1">
         {/* Workspace Header */}
         <div className="mb-6">
           <h2
-            className="text-xl font-bold mb-2"
+            className="text-xl font-bold mb-2 cursor-pointer"
             style={{ color: sidebarHeading }}
+            onClick={() => router.push("/")}
           >
             Workspace
           </h2>
-          <div className="flex items-center gap-2">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => router.push("/")}
+          >
             <Avatar className="w-9 h-9">
               <AvatarImage
                 src="https://randomuser.me/api/portraits/men/32.jpg"
@@ -154,11 +159,8 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Profile Dropdown */}
-      <div
-        className="mt-6 border-t pt-4"
-        style={{ borderTopColor: sidebarBorder }}
-      >
+      {/* Fixed Profile Dropdown at Bottom */}
+      <div className="border-t pt-4" style={{ borderTopColor: sidebarBorder }}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div
