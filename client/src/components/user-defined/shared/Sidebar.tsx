@@ -1,14 +1,13 @@
 "use client";
 
 import globalStyles from "@/styles/globalStyles";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store/store";
-import { getInitialsFromFullName } from "@/utils/auth";
 import ProfileDropDown from "./Sidebar/ProfileDropDown";
 import SearchBar from "./Sidebar/SearchBar";
+import AvatarHeader from "./Sidebar/AvatarHeader";
 
 const Sidebar = () => {
   const router = useRouter();
@@ -84,20 +83,10 @@ const Sidebar = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => router.push("/")}
           >
-            <Avatar className="w-9 h-9">
-              <AvatarImage
-                className="w-full h-full object-cover rounded-full"
-                src={
-                  profileImageUrl ||
-                  "https://randomuser.me/api/portraits/men/32.jpg"
-                }
-                alt={username || "User"}
-              />
-
-              <AvatarFallback>
-                {getInitialsFromFullName(username)}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarHeader
+              profileImageUrl={profileImageUrl}
+              username={username}
+            />
             <span
               className="text-sm font-medium"
               style={{ color: sidebarHeading }}
