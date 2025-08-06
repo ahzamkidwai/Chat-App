@@ -29,10 +29,11 @@ const Sidebar = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const username = useSelector(
     (state: RootState) => state.user.username || "John Doe"
   );
-
+  const reloadKey = useSelector((state: RootState) => state.user.reloadKey);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -48,6 +49,31 @@ const Sidebar = () => {
       setSearchResults([]);
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch user details");
+        }
+        const data = await response.json();
+        setProfileImageUrl(data.profile.profilePhotoUrl || "");
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+      }
+    };
+    fetchUserDetails();
+  }, [reloadKey]);
 
   const fetchSearchResults = async (query: string, currentPage: number) => {
     try {
@@ -89,14 +115,6 @@ const Sidebar = () => {
       setLoading(false);
     }
   };
-
-  // const getInitialsFromFullName = (fullName: string) => {
-  //   if (!fullName) return "U";
-  //   const nameParts = fullName.trim().split(" ");
-  //   const first = nameParts[0]?.charAt(0).toUpperCase() || "";
-  //   const last = nameParts[nameParts.length - 1]?.charAt(0).toUpperCase() || "";
-  //   return `${first}${last}`;
-  // };
 
   const getInitialsFromFullName = (fullName: string) => {
     if (!fullName) return "U";
@@ -150,8 +168,11 @@ const Sidebar = () => {
           >
             <Avatar className="w-9 h-9">
               <AvatarImage
-                src="https://randomuser.me/api/portraits/men/32.jpg"
-                alt="User"
+                src={
+                  profileImageUrl ||
+                  "https://randomuser.me/api/portraits/men/32.jpg"
+                }
+                alt={username || "User"}
               />
               <AvatarFallback>
                 {getInitialsFromFullName(username)}
@@ -347,7 +368,7 @@ const Sidebar = () => {
             >
               <div className="flex items-center gap-2">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src="/profile.jpg" alt="Profile" />
+                  <AvatarImage src={profileImageUrl} alt="Profile" />
                   <AvatarFallback>
                     {getInitialsFromFullName(username)}
                   </AvatarFallback>

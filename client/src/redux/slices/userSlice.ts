@@ -6,6 +6,7 @@ interface UserState {
   phoneNumber: string;
   token?: string | undefined;
   userId?: string;
+  reloadKey?: boolean;
 }
 
 const initialState: UserState = {
@@ -14,6 +15,7 @@ const initialState: UserState = {
   phoneNumber: "",
   token: undefined,
   userId: "",
+  reloadKey: false,
 };
 
 const userSlice = createSlice({
@@ -24,11 +26,13 @@ const userSlice = createSlice({
       state.username = action.payload.username;
       state.email = action.payload.email;
       state.phoneNumber = action.payload.phoneNumber;
-      // state.token = action.payload.token;
       state.userId = action.payload.userId;
     },
     setToken: (state, action: PayloadAction<string | undefined>) => {
       state.token = action.payload;
+    },
+    setReload: (state) => {
+      state.reloadKey = !state.reloadKey;
     },
     clearUserDetails: (state) => {
       state.username = "";
@@ -39,5 +43,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserDetails, clearUserDetails, setToken } = userSlice.actions;
+export const { setUserDetails, clearUserDetails, setToken, setReload } =
+  userSlice.actions;
 export default userSlice.reducer;

@@ -7,13 +7,15 @@ import { AppDispatch, RootState } from "@/redux/store/store";
 import { useRouter } from "next/navigation";
 import { editUserProfile } from "@/services/userService";
 import { EditUserProfileRequest } from "@/types/userProfile";
-import { setUserDetails } from "@/redux/slices/userSlice";
+import { setReload, setUserDetails } from "@/redux/slices/userSlice";
 
 const EditUserProfile = () => {
   const router = useRouter();
+
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.userId);
   const authToken = useSelector((state: RootState) => state.user.token);
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   // Profile image states
@@ -140,6 +142,8 @@ const EditUserProfile = () => {
           userId: userId || "",
         })
       );
+
+      dispatch(setReload());
 
       // Clean up image preview if we have one
       if (imagePreview) {
