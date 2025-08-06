@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import globalStyles from "@/styles/globalStyles";
 import SvgLogo from "../shared/SvgLogo";
+import { toast } from "react-toastify";
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -96,6 +97,7 @@ const SignUpForm = () => {
       const data = await response.json();
       console.log("Registration successful:", data);
       localStorage.setItem("userPhone", formData.phoneNumber);
+      toast.success("OTP sent to registered email");
       setTimeout(() => {
         router.push("/verify-otp");
       }, 1500);
