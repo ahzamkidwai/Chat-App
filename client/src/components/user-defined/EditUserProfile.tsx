@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, use, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Camera, Pencil, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store/store";
@@ -15,8 +15,11 @@ const EditUserProfile = () => {
   const userId = useSelector((state: RootState) => state.user.userId);
   const authToken = useSelector((state: RootState) => state.user.token);
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  // Profile image
+
+  // Profile image states
   const [profileImage, setProfileImage] = useState<string>("");
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   // Basic fields
   const [firstName, setFirstName] = useState("");
@@ -32,27 +35,43 @@ const EditUserProfile = () => {
   const [website, setWebsite] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
-  const [status, setStatus] = useState("Hey there! I’m using this app.");
+  const [status, setStatus] = useState("Hey there! I'm using this app.");
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const token = useSelector((state: RootState) => state.user.token);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setSelectedImageFile(file);
+  };
+
+  const handleImageDelete = () => {
+    setImagePreview("");
+    setSelectedImageFile(null);
+    if (profileImage) {
+      // Only clear profileImage if we want to remove the existing image
+      setProfileImage("");
+    }
+  };
+
+  const uploadProfileImage = async () => {
+    if (!selectedImageFile || !userId) return null;
+
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", userId as string);
-    console.log("📷 Uploading image with formData:", formData);
-    console.log("📷 User ID:", userId);
-    console.log("📷 Auth Token:", authToken);
-    console.log("File Name:", file);
-    const uuid = userId || "";
+    formData.append("file", selectedImageFile);
+    formData.append("userId", userId);
+
     try {
       const response = await fetch(
-        `${API_URL}/uploads/profile-image?userId=${uuid}`,
+        `${API_URL}/uploads/profile-image?userId=${userId}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${authToken}`, // Replace with your real token
+            Authorization: `Bearer ${authToken}`,
           },
           body: formData,
         }
@@ -60,53 +79,57 @@ const EditUserProfile = () => {
 
       const data = await response.json();
       if (data.success) {
-        setProfileImage(data.fileUrl); // You can now set image URL in state
-        console.log("Uploaded image URL:", data.fileUrl);
+        return data.fileUrl;
       } else {
         console.error("Upload failed:", data.message);
+        return null;
       }
     } catch (error) {
       console.error("Error uploading image:", error);
+      return null;
     }
   };
-
-  const token = useSelector((state: RootState) => state.user.token);
-
-  const handleImageDelete = () => setProfileImage("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const requestBody: EditUserProfileRequest = {
-      profilePhotoUrl: profileImage || "",
-      personal_details: {
-        firstName,
-        middleName,
-        lastName,
-        dob: dateOfBirth,
-      },
-      contact_information: {
-        email,
-        phone,
-        city,
-        country,
-      },
-      professional_details: {
-        occupation,
-        website,
-      },
-      additional_information: {
-        statusMessage: status,
-        bio,
-      },
-    };
-
-    console.log("📦 Final request body:", requestBody);
-
     try {
+      let imageUrl = profileImage;
+
+      // Upload new image if selected
+      if (selectedImageFile) {
+        const uploadedUrl = await uploadProfileImage();
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
+      const requestBody: EditUserProfileRequest = {
+        profilePhotoUrl: imageUrl || "",
+        personal_details: {
+          firstName,
+          middleName,
+          lastName,
+          dob: dateOfBirth,
+        },
+        contact_information: {
+          email,
+          phone,
+          city,
+          country,
+        },
+        professional_details: {
+          occupation,
+          website,
+        },
+        additional_information: {
+          statusMessage: status,
+          bio,
+        },
+      };
+
       const data = await editUserProfile(token ?? "", requestBody);
 
-      console.log("✅ Profile updated successfully:", data);
       const fullName = `${data.personal_details.firstName} ${data.personal_details.middleName} ${data.personal_details.lastName}`;
 
       dispatch(
@@ -117,9 +140,15 @@ const EditUserProfile = () => {
           userId: userId || "",
         })
       );
+
+      // Clean up image preview if we have one
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
       router.push("/");
     } catch (error) {
-      console.error("❌ Error updating profile:", error);
+      console.error("Error updating profile:", error);
     }
   };
 
@@ -132,16 +161,16 @@ const EditUserProfile = () => {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // ✅ Add your JWT token here
+              Authorization: `Bearer ${token}`,
             },
           }
         );
         const data = await response.json();
-        console.log("Fetched User Data:", data);
+
         if (!response.ok) {
           throw new Error(data.message || "Failed to fetch user profile");
         }
-        console.log("User Profile:", data);
+
         setFirstName(data.profile?.personal_details?.firstName || "");
         setMiddleName(data.profile?.personal_details?.middleName || "");
         setLastName(data.profile?.personal_details?.lastName || "");
@@ -154,13 +183,22 @@ const EditUserProfile = () => {
         setWebsite(data.profile?.professional_details?.website || "");
         setStatus(data.profile?.additional_information?.statusMessage || "");
         setBio(data.profile?.additional_information?.bio || "");
-        setProfileImage(data?.profile?.profilePhotoUrl);
-      } catch (error) {}
+        setProfileImage(data?.profile?.profilePhotoUrl || "");
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
     };
     fetchUserData();
-  }, []);
+  }, [token]);
 
-  console.log("Profile Image URL:", profileImage);
+  // Clean up image preview when component unmounts
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -168,7 +206,13 @@ const EditUserProfile = () => {
       <div className="flex flex-col items-center mb-8">
         <div className="relative">
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-600">
-            {profileImage ? (
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="object-cover w-full h-full"
+              />
+            ) : profileImage ? (
               <img
                 src={profileImage}
                 alt="Profile"
@@ -191,7 +235,7 @@ const EditUserProfile = () => {
             />
           </label>
 
-          {profileImage && (
+          {(imagePreview || profileImage) && (
             <button
               type="button"
               onClick={handleImageDelete}
