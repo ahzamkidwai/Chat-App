@@ -1,6 +1,7 @@
 import User from "../models/user-model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendEmailOtp } from "./emailController.js";
 
 const JWT_SECRET =
   process.env.JWT_SECRET ||
@@ -29,14 +30,24 @@ export const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ phoneNumber });
 
     if (existingUser && existingUser.isVerified) {
-      return res.status(400).json({ message: "User already registered" });
+      return res
+        .status(400)
+        .json({ message: "User already registered and verified" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000);
     const hashedPassword = await bcrypt.hash(password.trim(), 10);
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    console.log(`OTP for ${phoneNumber}: ${otp}`);
+    // Send OTP via email
+    const emailResult = await sendEmailOtp(email, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({
+        message: "Failed to send OTP email",
+        error: emailResult.error,
+      });
+    }
 
+    // Save or update user
     await User.findOneAndUpdate(
       { phoneNumber },
       {
@@ -48,6 +59,7 @@ export const registerUser = async (req, res) => {
         email: email.trim(),
         password: hashedPassword,
         otp,
+        otpExpiresAt,
         isVerified: false,
       },
       { upsert: true, new: true }

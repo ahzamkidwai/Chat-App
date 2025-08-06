@@ -10,6 +10,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import nodemailer from "nodemailer";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -38,6 +39,14 @@ app.get("/", (req, res) => {
 });
 
 const usersMap = new Map();
+
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE || "gmail", // e.g., "gmail", "SendGrid"
+  auth: {
+    user: process.env.EMAIL_USER, // Your email (e.g., lawfirm@gmail.com)
+    pass: process.env.EMAIL_PASSWORD, // App password (for Gmail) or API key (SendGrid)
+  },
+});
 
 io.on("connection", (socket) => {
   console.log("✅ A user connected:", socket.id);
