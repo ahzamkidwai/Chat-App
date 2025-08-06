@@ -35,6 +35,7 @@ export const registerUser = async (req, res) => {
         .json({ message: "User already registered and verified" });
     }
 
+    const otp = Math.floor(100000 + Math.random() * 900000);
     const hashedPassword = await bcrypt.hash(password.trim(), 10);
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
