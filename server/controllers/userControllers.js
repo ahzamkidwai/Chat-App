@@ -100,36 +100,8 @@ export const updateUserProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Single User not found" });
     }
-    console.log("User found for profile update:", user);
 
-    const userFieldsToUpdate = {};
-    if (updates.personal_details?.firstName)
-      userFieldsToUpdate.firstName = updates.personal_details.firstName;
-    if (updates.personal_details?.middleName)
-      userFieldsToUpdate.middleName = updates.personal_details.middleName;
-    if (updates.personal_details?.lastName)
-      userFieldsToUpdate.lastName = updates.personal_details.lastName;
-    if (updates.contact_information?.email)
-      userFieldsToUpdate.email = updates.contact_information.email;
-    if (updates.contact_information?.phone)
-      userFieldsToUpdate.phoneNumber = updates.contact_information.phone;
-
-    if (Object.keys(userFieldsToUpdate).length > 0) {
-      userFieldsToUpdate.fullName = [
-        updates.personal_details?.firstName || user.firstName,
-        updates.personal_details?.middleName || user.middleName || "",
-        updates.personal_details?.lastName || user.lastName,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      await User.findByIdAndUpdate(
-        userId,
-        { $set: userFieldsToUpdate },
-        { new: true }
-      );
-    }
-
-    // Find and update the user's profile
+    // Update UserProfile
     const updatedProfile = await UserProfile.findOneAndUpdate(
       { userId },
       { $set: updates },
@@ -138,6 +110,33 @@ export const updateUserProfile = async (req, res) => {
 
     if (!updatedProfile) {
       return res.status(404).json({ message: "User profile not found" });
+    }
+
+    // Update User model from updated profile fields
+    const updatedUserFields = {};
+    const pd = updatedProfile.personal_details || {};
+    const ci = updatedProfile.contact_information || {};
+
+    if (pd.firstName) updatedUserFields.firstName = pd.firstName;
+    if (pd.middleName) updatedUserFields.middleName = pd.middleName;
+    if (pd.lastName) updatedUserFields.lastName = pd.lastName;
+    if (ci.email) updatedUserFields.email = ci.email;
+    if (ci.phone) updatedUserFields.phoneNumber = ci.phone;
+
+    if (Object.keys(updatedUserFields).length > 0) {
+      updatedUserFields.fullName = [
+        pd.firstName || user.firstName,
+        pd.middleName || user.middleName || "",
+        pd.lastName || user.lastName,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      await User.findByIdAndUpdate(
+        userId,
+        { $set: updatedUserFields },
+        { new: true }
+      );
     }
 
     return res.status(200).json({
