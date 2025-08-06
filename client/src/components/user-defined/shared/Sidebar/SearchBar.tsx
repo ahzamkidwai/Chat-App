@@ -133,20 +133,17 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
                 color: sidebarText,
               }}
               onClick={() => {
-                router.push(`/profile/${user.id}`);
+                router.push(`/profile/${user._id}`);
               }}
             >
               <div className="flex items-center gap-3 w-full">
                 <AvatarHeader
-                  profileImageUrl={user.profileImageUrl}
+                  profileImageUrl={user.profilePhoto}
                   username={user.fullName}
                 />
                 <div className="flex-1 min-w-0">
-                  {" "}
                   <div className="flex items-center gap-2">
                     <p className="font-medium group-hover:text-blue-400 transition-colors truncate">
-                      {" "}
-                      {/* Added truncate */}
                       {user.fullName || "No Name"}
                     </p>
                     {user.isOnline && (
@@ -157,14 +154,13 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
                     )}
                   </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3 opacity-70 flex-shrink-0" />{" "}
+                    <Phone className="w-3 h-3 opacity-70 flex-shrink-0" />
                     <p className="text-xs opacity-80 truncate">
-                      {" "}
                       {user.phoneNumber}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-70 transition-opacity flex-shrink-0" />{" "}
+                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-70 transition-opacity flex-shrink-0" />
               </div>
             </div>
           ))}
