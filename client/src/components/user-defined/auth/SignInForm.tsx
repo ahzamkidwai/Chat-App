@@ -80,12 +80,13 @@ const SignInForm = () => {
 
       const data = await loginUser(loginId, formData.password);
       console.log("Login successful:", data);
-
+      console.log("User details:", data?.user._id);
       dispatch(
         setUserDetails({
           username: data?.user?.fullName,
           email: data?.user?.email,
           phoneNumber: data?.user?.phoneNumber,
+          userId: data?.user?._id,
         })
       );
 

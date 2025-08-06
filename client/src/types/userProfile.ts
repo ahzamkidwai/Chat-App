@@ -23,6 +23,7 @@ export type AdditionalInformation = {
 };
 
 export interface EditUserProfileRequest {
+  profilePhotoUrl?: string;
   personal_details: PersonalDetails;
   contact_information: ContactInformation;
   professional_details: ProfessionalDetails;

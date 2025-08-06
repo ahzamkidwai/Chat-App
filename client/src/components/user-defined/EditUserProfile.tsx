@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, use, useEffect, useState } from "react";
 import { Camera, Pencil, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store/store";
@@ -12,8 +12,11 @@ import { setUserDetails } from "@/redux/slices/userSlice";
 const EditUserProfile = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.user.userId);
+  const authToken = useSelector((state: RootState) => state.user.token);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   // Profile image
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string>("");
 
   // Basic fields
   const [firstName, setFirstName] = useState("");
@@ -31,23 +34,51 @@ const EditUserProfile = () => {
   const [city, setCity] = useState("");
   const [status, setStatus] = useState("Hey there! I’m using this app.");
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setProfileImage(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("userId", userId as string);
+    console.log("📷 Uploading image with formData:", formData);
+    console.log("📷 User ID:", userId);
+    console.log("📷 Auth Token:", authToken);
+    console.log("File Name:", file);
+    const uuid = userId || "";
+    try {
+      const response = await fetch(
+        `${API_URL}/uploads/profile-image?userId=${uuid}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Replace with your real token
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setProfileImage(data.fileUrl); // You can now set image URL in state
+        console.log("Uploaded image URL:", data.fileUrl);
+      } else {
+        console.error("Upload failed:", data.message);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
     }
   };
 
   const token = useSelector((state: RootState) => state.user.token);
 
-  const handleImageDelete = () => setProfileImage(null);
+  const handleImageDelete = () => setProfileImage("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const requestBody: EditUserProfileRequest = {
+      profilePhotoUrl: profileImage || "",
       personal_details: {
         firstName,
         middleName,
@@ -83,6 +114,7 @@ const EditUserProfile = () => {
           username: fullName,
           email: data.contact_information.email,
           phoneNumber: data.contact_information.phone,
+          userId: userId || "",
         })
       );
       router.push("/");
@@ -122,10 +154,13 @@ const EditUserProfile = () => {
         setWebsite(data.profile?.professional_details?.website || "");
         setStatus(data.profile?.additional_information?.statusMessage || "");
         setBio(data.profile?.additional_information?.bio || "");
+        setProfileImage(data?.profile?.profilePhotoUrl);
       } catch (error) {}
     };
     fetchUserData();
   }, []);
+
+  console.log("Profile Image URL:", profileImage);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">

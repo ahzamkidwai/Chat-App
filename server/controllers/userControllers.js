@@ -123,21 +123,28 @@ export const updateUserProfile = async (req, res) => {
     if (ci.email) updatedUserFields.email = ci.email;
     if (ci.phone) updatedUserFields.phoneNumber = ci.phone;
 
-    if (Object.keys(updatedUserFields).length > 0) {
-      updatedUserFields.fullName = [
-        pd.firstName || user.firstName,
-        pd.middleName || user.middleName || "",
-        pd.lastName || user.lastName,
-      ]
-        .filter(Boolean)
-        .join(" ");
+    updatedUserFields.fullName = [
+      pd.firstName || user.firstName,
+      pd.middleName || user.middleName || "",
+      pd.lastName || user.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-      await User.findByIdAndUpdate(
-        userId,
-        { $set: updatedUserFields },
-        { new: true }
-      );
-    }
+    console.log("Updating User with fields:", updatedUserFields);
+
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          firstName: updatedProfile.personal_details.firstName,
+          middleName: updatedProfile.personal_details.middleName,
+          lastName: updatedProfile.personal_details.lastName,
+          fullName: updatedProfile.fullName,
+        },
+      },
+      { new: true }
+    );
 
     return res.status(200).json({
       success: true,

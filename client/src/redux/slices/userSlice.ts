@@ -5,6 +5,7 @@ interface UserState {
   email: string;
   phoneNumber: string;
   token?: string | undefined;
+  userId?: string;
 }
 
 const initialState: UserState = {
@@ -12,6 +13,7 @@ const initialState: UserState = {
   email: "",
   phoneNumber: "",
   token: undefined,
+  userId: "",
 };
 
 const userSlice = createSlice({
@@ -22,7 +24,8 @@ const userSlice = createSlice({
       state.username = action.payload.username;
       state.email = action.payload.email;
       state.phoneNumber = action.payload.phoneNumber;
-      state.token = action.payload.token;
+      // state.token = action.payload.token;
+      state.userId = action.payload.userId;
     },
     setToken: (state, action: PayloadAction<string | undefined>) => {
       state.token = action.payload;

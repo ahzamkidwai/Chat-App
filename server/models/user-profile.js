@@ -7,6 +7,7 @@ const userProfileSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    profilePhotoUrl: { type: String },
     personal_details: {
       firstName: { type: String, required: true },
       middleName: { type: String },
