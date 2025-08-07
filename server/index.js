@@ -4,6 +4,7 @@ import { connectDB } from "./config/connectDatabase.js";
 import authRoutes from "./routes/auth-routes.js";
 import userRoutes from "./routes/user-routes.js";
 import uploadRoutes from "./routes/upload-routes.js";
+import messageRoutes from "./routes/message-routes.js";
 import http from "http";
 import { Server } from "socket.io";
 import path from "path";
@@ -25,7 +26,19 @@ const corsOptions = {
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+// Before: const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001",
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  },
+});
+
+// 👇 Make io globally available
+app.set("io", io);
+
+// const io = new Server(server);
 
 app.use(cookieParser());
 app.use(cors(corsOptions));
@@ -33,6 +46,7 @@ app.use(express.json());
 app.use("/api/v1", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/uploads", uploadRoutes);
+app.use("/api/v1/messages", messageRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
