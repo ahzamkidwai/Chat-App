@@ -100,6 +100,7 @@ const Sidebar = () => {
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
         {/* Direct Messages */}
+
         <div>
           <h3
             className="text-sm font-semibold mb-2 mt-3"

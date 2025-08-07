@@ -12,6 +12,8 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import nodemailer from "nodemailer";
+import User from "./models/user-model.js"; // import User model
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -26,6 +28,10 @@ const corsOptions = {
 
 const app = express();
 const server = http.createServer(app);
+
+const onlineUsers = new Map();
+global.onlineUsers = onlineUsers; // optional for global access
+
 // Before: const io = new Server(server);
 const io = new Server(server, {
   cors: {
@@ -62,33 +68,67 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// io.on("connection", (socket) => {
+//   console.log("✅ A user connected:", socket.id);
+
+//   socket.on("register-user", (phoneNumber) => {
+//     usersMap.set(phoneNumber, socket.id);
+//     console.log(`📱 Registered ${phoneNumber} with socket ID: ${socket.id}`);
+//   });
+
+//   socket.on("private-message", ({ toPhoneNumber, message }) => {
+//     const targetSocketId = usersMap.get(toPhoneNumber);
+//     if (targetSocketId) {
+//       io.to(targetSocketId).emit("private-message", {
+//         message,
+//         sender: socket.id,
+//       });
+//     } else {
+//       socket.emit("private-message-failed", {
+//         error: "User not connected",
+//       });
+//     }
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("❌ User disconnected:", socket.id);
+//     for (const [phone, id] of usersMap.entries()) {
+//       if (id === socket.id) {
+//         usersMap.delete(phone);
+//         break;
+//       }
+//     }
+//   });
+// });
+
 io.on("connection", (socket) => {
   console.log("✅ A user connected:", socket.id);
 
-  socket.on("register-user", (phoneNumber) => {
-    usersMap.set(phoneNumber, socket.id);
-    console.log(`📱 Registered ${phoneNumber} with socket ID: ${socket.id}`);
+  // 🔌 When user comes online
+  socket.on("user-online", async (userId) => {
+    console.log("🟢 User online:", userId);
+    if (!userId) return;
+    console.log("User ID in user-online event:", userId);
+    onlineUsers.set(userId, socket.id);
+    console.log(`🟢 User ${userId} is online`);
+
+    // Optional: broadcast status to friends
+    // io.emit("user-status-changed", { userId, isOnline: true });
   });
 
-  socket.on("private-message", ({ toPhoneNumber, message }) => {
-    const targetSocketId = usersMap.get(toPhoneNumber);
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("private-message", {
-        message,
-        sender: socket.id,
-      });
-    } else {
-      socket.emit("private-message-failed", {
-        error: "User not connected",
-      });
-    }
-  });
-
-  socket.on("disconnect", () => {
+  // ❌ When user disconnects
+  socket.on("disconnect", async () => {
     console.log("❌ User disconnected:", socket.id);
-    for (const [phone, id] of usersMap.entries()) {
-      if (id === socket.id) {
-        usersMap.delete(phone);
+
+    for (const [userId, sockId] of onlineUsers.entries()) {
+      if (sockId === socket.id) {
+        onlineUsers.delete(userId);
+
+        // 🕒 Update lastSeen in DB
+        await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
+
+        // Optional: broadcast status change
+        // io.emit("user-status-changed", { userId, isOnline: false });
         break;
       }
     }

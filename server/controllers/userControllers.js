@@ -156,3 +156,25 @@ export const updateUserProfile = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getUserStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log("Checking status for user ID:", userId);
+    const isOnline = global.onlineUsers.has(userId);
+    console.log("Is user online?", isOnline);
+    console.log("Online users map:", global.onlineUsers);
+    if (isOnline) {
+      return res.status(200).json({ status: "online" });
+    }
+
+    const user = await User.findById(userId).select("lastSeen");
+    console.log("User last seen:", user);
+    res.status(200).json({
+      status: "offline",
+      lastSeen: user?.lastSeen || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

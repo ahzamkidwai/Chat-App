@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema({
   profilePhoto: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   isVerified: { type: Boolean, default: false },
+
+  lastSeen: { type: Date, default: Date.now },
 });
 
 // Post-save hook to create UserProfile automatically
