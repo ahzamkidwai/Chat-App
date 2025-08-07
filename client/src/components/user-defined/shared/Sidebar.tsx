@@ -8,6 +8,7 @@ import { RootState } from "@/redux/store/store";
 import ProfileDropDown from "./Sidebar/ProfileDropDown";
 import SearchBar from "./Sidebar/SearchBar";
 import AvatarHeader from "./Sidebar/AvatarHeader";
+import DirectMessages from "./Sidebar/DirectMessages";
 
 const Sidebar = () => {
   const router = useRouter();
@@ -49,13 +50,7 @@ const Sidebar = () => {
     sidebarBorder,
     sidebarText,
     sidebarHeading,
-    sidebarInputBg,
     sidebarInputText,
-    dmOnline,
-    dmIdle,
-    dmDnd,
-    dmOffline,
-    hoverBg,
     hoverText,
   } = globalStyles.colors;
 
@@ -101,49 +96,7 @@ const Sidebar = () => {
 
         {/* Direct Messages */}
 
-        <div>
-          <h3
-            className="text-sm font-semibold mb-2 mt-3"
-            style={{ color: dmOffline }}
-          >
-            Direct Messages
-          </h3>
-          {[
-            { name: "Sarah Johnson", status: "online" },
-            { name: "Mike Chen", status: "idle" },
-            { name: "Alex Wong", status: "dnd" },
-            { name: "Emily Davis", status: "offline" },
-          ].map((dm) => (
-            <div
-              key={dm.name}
-              className="flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors"
-              style={{
-                color: dm.status === "offline" ? dmOffline : sidebarHeading,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = hoverBg;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{
-                  backgroundColor:
-                    dm.status === "online"
-                      ? dmOnline
-                      : dm.status === "idle"
-                      ? dmIdle
-                      : dm.status === "dnd"
-                      ? dmDnd
-                      : dmOffline,
-                }}
-              />
-              <span>{dm.name}</span>
-            </div>
-          ))}
-        </div>
+        <DirectMessages />
       </div>
 
       <ProfileDropDown profileImageUrl={profileImageUrl} username={username} />
