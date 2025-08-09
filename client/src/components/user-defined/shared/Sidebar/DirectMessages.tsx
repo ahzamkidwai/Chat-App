@@ -12,6 +12,7 @@ import {
   VideoIcon,
   Volume2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const DirectMessages = () => {
   const { sidebarText, dmOnline, dmIdle, dmDnd, dmOffline, sidebarBg } =
@@ -19,7 +20,7 @@ const DirectMessages = () => {
 
   const userId = useSelector((state: RootState) => state.user.userId);
   const token = useSelector((state: RootState) => state.user.token);
-
+  const router = useRouter();
   const [directMessages, setDirectMessages] = useState<any[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null); // ✅ Moved outside
 
@@ -130,6 +131,7 @@ const DirectMessages = () => {
             className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-opacity-10 hover:bg-white ${
               !dm.isRead && !isSender ? "bg-gray-800/20" : ""
             }`}
+            onClick={() => router.push(`/message/${dm.receiverId}`)}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
