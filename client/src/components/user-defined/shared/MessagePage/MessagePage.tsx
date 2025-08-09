@@ -2,12 +2,11 @@
 
 import { RootState } from "@/redux/store/store";
 import globalStyles from "@/styles/globalStyles";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "next/navigation";
-import { formatDistanceToNowStrict } from "date-fns";
-import { Paperclip, Send, Smile, CheckCheck, Check } from "lucide-react";
-import Image from "next/image";
+import DispalyMessages from "./DisplayMessages";
+import { Paperclip, Send, Smile } from "lucide-react";
 
 import MessagePageHeader from "./MessagePageHeader";
 
@@ -33,12 +32,6 @@ const MessagePage = () => {
   const [otherUser, setOtherUser] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   useEffect(() => {
     const fetchConversation = async () => {
       try {
@@ -55,7 +48,15 @@ const MessagePage = () => {
         const responseData = await response.json();
         console.log("Response data:", responseData);
         console.log("Conversation data:", responseData);
-        setMessages(responseData.messages || []);
+        // setMessages(responseData.messages || []);
+
+        if (Array.isArray(responseData)) {
+          setMessages(responseData);
+        } else if (responseData.messages) {
+          setMessages(responseData.messages);
+        } else {
+          setMessages([]);
+        }
       } catch (error) {
         console.error("Error fetching conversation:", error);
       }
@@ -140,38 +141,6 @@ const MessagePage = () => {
     }
   };
 
-  const getMessageContent = (message: any) => {
-    if (message.messageType === "image")
-      return (
-        <div className="mt-2">
-          <Image
-            src={message.mediaUrl}
-            alt="Sent image"
-            width={200}
-            height={200}
-            className="rounded-lg max-w-full h-auto"
-          />
-        </div>
-      );
-    if (message.messageType === "video")
-      return (
-        <div className="mt-2">
-          <video controls className="rounded-lg max-w-full h-auto">
-            <source src={message.mediaUrl} type="video/mp4" />
-          </video>
-        </div>
-      );
-    if (message.messageType === "audio")
-      return (
-        <div className="mt-2">
-          <audio controls className="w-full">
-            <source src={message.mediaUrl} type="audio/mpeg" />
-          </audio>
-        </div>
-      );
-    return message.content;
-  };
-
   return (
     <div
       className="flex flex-col h-screen"
@@ -180,59 +149,10 @@ const MessagePage = () => {
       {/* Header */}
       <MessagePageHeader otherUser={otherUser} />
       {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-3"
-        style={{ backgroundColor: sidebarInputBg }}
-      >
-        {messages.map((message) => {
-          const isMine = message.sender === currentUserId;
-
-          return (
-            <div
-              key={message._id}
-              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[75%] p-3 rounded-2xl relative ${
-                  isMine ? "rounded-br-none" : "rounded-bl-none"
-                }`}
-                style={{
-                  backgroundColor: isMine ? "#4f545c" : "#36393f",
-                  color: sidebarText,
-                }}
-              >
-                {/* Message Content */}
-                <div className="text-sm break-words">
-                  {getMessageContent(message)}
-                </div>
-
-                {/* Time + Read Receipt */}
-                <div
-                  className="text-[10px] mt-1 flex justify-end items-center gap-1"
-                  style={{ opacity: 0.7 }}
-                >
-                  {formatDistanceToNowStrict(new Date(message.sentAt), {
-                    addSuffix: true,
-                  })}
-                  {isMine &&
-                    (message.isRead ? (
-                      <CheckCheck
-                        className="w-3 h-3"
-                        style={{ color: dmOnline }}
-                      />
-                    ) : (
-                      <Check
-                        className="w-3 h-3"
-                        style={{ color: sidebarText }}
-                      />
-                    ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+      <DispalyMessages
+        messages={messages}
+        currentUserId={currentUserId as string}
+      />
 
       {/* Input */}
       <div

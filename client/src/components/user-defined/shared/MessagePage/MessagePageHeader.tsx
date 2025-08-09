@@ -15,7 +15,6 @@ const MessagePageHeader = ({ otherUser }: any) => {
   const fullName = otherUser?.fullName || "Unknown";
   const phoneNumber = otherUser?.phoneNumber || "No phone number";
   const profilePhoto = otherUser?.profilePhoto;
-  const dummyStatus = "Active now"; // You can change to "Online", "Offline", etc.
 
   return (
     <div
@@ -25,9 +24,7 @@ const MessagePageHeader = ({ otherUser }: any) => {
         backgroundColor: sidebarBg,
       }}
     >
-      {/* Left side: back + user info */}
       <div className="flex items-center gap-3">
-        {/* Back button */}
         <Link
           href="/message"
           className="hover:text-white"
