@@ -6,20 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
-import {
-  MessageCircle,
-  ImageIcon,
-  VideoIcon,
-  Volume2,
-  ArrowLeft,
-  Paperclip,
-  Send,
-  Smile,
-  CheckCheck,
-  Check,
-} from "lucide-react";
+import { Paperclip, Send, Smile, CheckCheck, Check } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+
+import MessagePageHeader from "./MessagePageHeader";
 
 const MessagePage = () => {
   const { userId } = useParams();
@@ -30,8 +20,6 @@ const MessagePage = () => {
     dmIdle,
     dmDnd,
     dmOffline,
-    hoverBg,
-    hoverText,
     sidebarInputBg,
     sidebarInputText,
     sidebarBorder,
@@ -45,15 +33,12 @@ const MessagePage = () => {
   const [otherUser, setOtherUser] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
 
-  // const messagesEndRef = useRef(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch conversation
   useEffect(() => {
     const fetchConversation = async () => {
       try {
@@ -67,16 +52,10 @@ const MessagePage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        const text = await response.text();
-
-        // if (!response.ok) {
-        //   throw new Error(`API error ${response.status}: ${text}`);
-        // }
-
-        const data = JSON.parse(text); // parse manually
-        console.log("Conversation data:", data);
-        setMessages(data.messages || []);
+        const responseData = await response.json();
+        console.log("Response data:", responseData);
+        console.log("Conversation data:", responseData);
+        setMessages(responseData.messages || []);
       } catch (error) {
         console.error("Error fetching conversation:", error);
       }
@@ -91,7 +70,8 @@ const MessagePage = () => {
   useEffect(() => {
     const fetchOtherUser = async () => {
       try {
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`;
+        // const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`;
         console.log("Fetching user from:", apiUrl);
 
         const response = await fetch(apiUrl, {
@@ -102,15 +82,16 @@ const MessagePage = () => {
           },
         });
 
-        const text = await response.text();
+        const responseData = await response.json();
+        console.log("Response data for other user:", responseData);
 
-        // if (!response.ok) {
-        //   throw new Error(`API error ${response.status}: ${text}`);
-        // }
+        if (!response.ok) {
+          throw new Error(
+            `API error ${response.status}: ${responseData.message}`
+          );
+        }
 
-        // const data = JSON.parse(text);
-        // console.log("Other user data:", data);
-        // setOtherUser(data.user || data);
+        setOtherUser(responseData.profile);
       } catch (error) {
         console.error("Error fetching other user:", error);
       }
@@ -194,74 +175,7 @@ const MessagePage = () => {
       style={{ backgroundColor: sidebarBg }}
     >
       {/* Header */}
-      <div
-        className="sticky top-0 z-10 flex items-center gap-3 p-4"
-        style={{
-          borderBottom: `1px solid ${sidebarBorder}`,
-          backgroundColor: sidebarBg,
-        }}
-      >
-        <Link
-          href="/messages"
-          className="hover:text-white"
-          style={{ color: sidebarText }}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        {otherUser && (
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div
-                className="w-10 h-10 rounded-full overflow-hidden"
-                style={{ backgroundColor: sidebarInputBg }}
-              >
-                {otherUser.profilePhoto ? (
-                  <Image
-                    src={otherUser.profilePhoto}
-                    alt={otherUser.fullName}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{ color: sidebarText }}
-                  >
-                    {otherUser.fullName?.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <span
-                className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
-                style={{
-                  backgroundColor:
-                    otherUser.status === "online"
-                      ? dmOnline
-                      : otherUser.status === "idle"
-                      ? dmIdle
-                      : otherUser.status === "dnd"
-                      ? dmDnd
-                      : dmOffline,
-                  borderColor: sidebarBg,
-                }}
-              ></span>
-            </div>
-            <div>
-              <h2
-                className="text-base font-semibold"
-                style={{ color: sidebarHeading }}
-              >
-                {otherUser.fullName}
-              </h2>
-              <p className="text-xs capitalize" style={{ color: sidebarText }}>
-                {otherUser.status || "offline"}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
+      <MessagePageHeader otherUser={otherUser} />
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-4 space-y-3"
