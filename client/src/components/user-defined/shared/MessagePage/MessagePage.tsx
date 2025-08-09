@@ -71,7 +71,7 @@ const MessagePage = () => {
     const fetchOtherUser = async () => {
       try {
         // const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`;
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/get-all-users`;
         console.log("Fetching user from:", apiUrl);
 
         const response = await fetch(apiUrl, {
@@ -83,7 +83,10 @@ const MessagePage = () => {
         });
 
         const responseData = await response.json();
-        console.log("Response data for other user:", responseData);
+        const userProfile = responseData.find(
+          (user: any) => user._id === userId
+        );
+        console.log("Response data for other user:", userProfile);
 
         if (!response.ok) {
           throw new Error(
@@ -91,7 +94,7 @@ const MessagePage = () => {
           );
         }
 
-        setOtherUser(responseData.profile);
+        setOtherUser(userProfile);
       } catch (error) {
         console.error("Error fetching other user:", error);
       }
