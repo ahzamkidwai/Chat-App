@@ -45,14 +45,8 @@ const Sidebar = () => {
     fetchUserDetails();
   }, [reloadKey]);
 
-  const {
-    sidebarBg,
-    sidebarBorder,
-    sidebarText,
-    sidebarHeading,
-    sidebarInputText,
-    hoverText,
-  } = globalStyles.colors;
+  const { sidebarBg, sidebarBorder, sidebarText, sidebarHeading } =
+    globalStyles.colors;
 
   return (
     <aside

@@ -1,15 +1,29 @@
 import globalStyles from "@/styles/globalStyles";
+import ImageAvatar from "../../ImageAvatar";
+
+interface Message {
+  _id: string;
+  sender: string;
+  content: string;
+  sentAt: string;
+  senderProfile?: string; // URL of sender's image
+  senderName?: string; // Optional sender name
+}
 
 const DisplayMessages = ({
   messages,
   currentUserId,
+  otherUser,
+  userProfileImageUrl,
 }: {
-  messages: any[];
+  messages: Message[];
   currentUserId: string;
+  otherUser: any;
+  userProfileImageUrl: string;
 }) => {
   const { sidebarInputBg, primary, sidebarText } = globalStyles.colors;
+  const otherUserProfileUrl = otherUser.profilePhoto || "";
 
-  // Helper: Format date header
   const formatDateHeader = (dateStr: string) => {
     const today = new Date();
     const msgDate = new Date(dateStr);
@@ -25,15 +39,12 @@ const DisplayMessages = ({
     });
   };
 
-  // Group messages by date
-  const groupedMessages: { [key: string]: any[] } = {};
-  messages.forEach((msg) => {
+  const groupedMessages = messages.reduce((acc, msg) => {
     const dateKey = new Date(msg.sentAt).toISOString().split("T")[0];
-    if (!groupedMessages[dateKey]) {
-      groupedMessages[dateKey] = [];
-    }
-    groupedMessages[dateKey].push(msg);
-  });
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(msg);
+    return acc;
+  }, {} as Record<string, Message[]>);
 
   const sortedDates = Object.keys(groupedMessages).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
@@ -65,7 +76,7 @@ const DisplayMessages = ({
             {formatDateHeader(dateKey)}
           </div>
 
-          {/* Messages for that date */}
+          {/* Messages for this date */}
           {groupedMessages[dateKey].map((msg) => {
             const isSent = msg.sender === currentUserId;
             const time = new Date(msg.sentAt).toLocaleTimeString([], {
@@ -79,12 +90,19 @@ const DisplayMessages = ({
                 key={msg._id}
                 style={{
                   display: "flex",
+                  alignItems: "flex-end",
                   justifyContent: isSent ? "flex-end" : "flex-start",
+                  gap: "0.5rem",
+                  marginBottom: "0.5rem",
                 }}
               >
+                {/* Avatar for received messages */}
+                {!isSent && <ImageAvatar profileImage={otherUserProfileUrl} />}
+
+                {/* Message bubble */}
                 <div
                   style={{
-                    maxWidth: "80%",
+                    maxWidth: "70%",
                     padding: "0.6rem 1rem",
                     borderRadius: "1rem",
                     backgroundColor: isSent ? primary : sidebarInputBg,
@@ -106,6 +124,9 @@ const DisplayMessages = ({
                     {time}
                   </div>
                 </div>
+
+                {/* Avatar for sent messages */}
+                {isSent && <ImageAvatar profileImage={userProfileImageUrl} />}
               </div>
             );
           })}

@@ -8,7 +8,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import globalStyles from "@/styles/globalStyles";
-import { getInitialsFromFullName } from "@/utils/auth";
 import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -40,6 +39,7 @@ const ProfileDropDown = ({
     try {
       await fetch("/api/logout");
       router.refresh();
+      router.replace("/");
     } catch (err) {
       console.error("Logout error:", err);
       setLoading(false);

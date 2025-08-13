@@ -31,12 +31,12 @@ const MessagePage = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [otherUser, setOtherUser] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [userProfileImageUrl, setUserProfileImageUrl] = useState<string>("");
 
   useEffect(() => {
     const fetchConversation = async () => {
       try {
         const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/messages/between/${currentUserId}/${userId}`;
-        console.log("Fetching conversation from:", apiUrl);
 
         const response = await fetch(apiUrl, {
           method: "GET",
@@ -46,10 +46,6 @@ const MessagePage = () => {
           },
         });
         const responseData = await response.json();
-        console.log("Response data:", responseData);
-        console.log("Conversation data:", responseData);
-        // setMessages(responseData.messages || []);
-
         if (Array.isArray(responseData)) {
           setMessages(responseData);
         } else if (responseData.messages) {
@@ -67,14 +63,12 @@ const MessagePage = () => {
     }
   }, [userId, currentUserId, token]);
 
-  // Fetch other user details
   useEffect(() => {
-    const fetchOtherUser = async () => {
-      try {
-        // const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`;
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/get-all-users`;
-        console.log("Fetching user from:", apiUrl);
+    if (!userId || !token) return;
 
+    const fetchOtherUser = async () => {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/get-all-users`;
+      try {
         const response = await fetch(apiUrl, {
           method: "GET",
           headers: {
@@ -87,7 +81,6 @@ const MessagePage = () => {
         const userProfile = responseData.find(
           (user: any) => user._id === userId
         );
-        console.log("Response data for other user:", userProfile);
 
         if (!response.ok) {
           throw new Error(
@@ -101,9 +94,38 @@ const MessagePage = () => {
       }
     };
 
-    if (userId && token) {
-      fetchOtherUser();
-    }
+    const fetchUserProfileImage = async () => {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/user-profile`;
+      try {
+        const res = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`API error ${res.status}`);
+        }
+
+        const responseData = await res.json();
+        const profileURL = responseData?.profile?.profilePhotoUrl;
+
+        if (profileURL) {
+          setUserProfileImageUrl(profileURL);
+        } else {
+          console.warn("Profile photo URL not found in response.");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile image:", error);
+      }
+    };
+
+    // Run both requests simultaneously
+    Promise.all([fetchOtherUser(), fetchUserProfileImage()])
+      .then(() => console.log("Both API calls finished"))
+      .catch((err) => console.error("Error in one of the API calls:", err));
   }, [userId, token]);
 
   const handleSendMessage = async () => {
@@ -141,6 +163,8 @@ const MessagePage = () => {
     }
   };
 
+  useEffect(() => {}, [otherUser]);
+
   return (
     <div
       className="flex flex-col h-screen"
@@ -149,10 +173,14 @@ const MessagePage = () => {
       {/* Header */}
       <MessagePageHeader otherUser={otherUser} />
       {/* Messages */}
-      <DispalyMessages
-        messages={messages}
-        currentUserId={currentUserId as string}
-      />
+      {otherUser && (
+        <DispalyMessages
+          messages={messages}
+          currentUserId={currentUserId as string}
+          otherUser={otherUser}
+          userProfileImageUrl={userProfileImageUrl}
+        />
+      )}
 
       {/* Input */}
       <div
