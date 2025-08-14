@@ -128,12 +128,47 @@ const MessagePage = () => {
       .catch((err) => console.error("Error in one of the API calls:", err));
   }, [userId, token]);
 
+  // const handleSendMessage = async () => {
+  //   if (!newMessage.trim()) return;
+
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/messages`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify({
+  //           sender: currentUserId,
+  //           receiver: userId,
+  //           content: newMessage,
+  //           messageType: "text",
+  //         }),
+  //       }
+  //     );
+
+  //     const text = await response.text();
+
+  //     if (!response.ok) {
+  //       throw new Error(`Send message failed: ${text}`);
+  //     }
+
+  //     const sentMessage = JSON.parse(text);
+  //     setMessages((prev) => [...prev, sentMessage]);
+  //     setNewMessage("");
+  //   } catch (error) {
+  //     console.error("Error sending message:", error);
+  //   }
+  // };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/messages`,
+        `${process.env.NEXT_PUBLIC_API_URL}/messages/sendMessage`, // match backend route
         {
           method: "POST",
           headers: {
@@ -141,22 +176,25 @@ const MessagePage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            sender: currentUserId,
-            receiver: userId,
+            senderId: currentUserId, // match backend param
+            receiverId: userId, // match backend param
             content: newMessage,
-            messageType: "text",
+            messageType: "text", // optional, defaults to "text"
           }),
         }
       );
 
-      const text = await response.text();
-
       if (!response.ok) {
-        throw new Error(`Send message failed: ${text}`);
+        // const errText = await response.text();
+        // throw new Error(`Send message failed: ${errText}`);
+        throw new Error(`Send message failed: `);
       }
 
-      const sentMessage = JSON.parse(text);
-      setMessages((prev) => [...prev, sentMessage]);
+      const data = await response.json();
+
+      // Append the new message to state
+      setMessages((prev) => [...prev, data.message]);
+
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
