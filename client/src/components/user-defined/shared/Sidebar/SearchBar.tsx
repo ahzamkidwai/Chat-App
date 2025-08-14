@@ -133,7 +133,7 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
                 color: sidebarText,
               }}
               onClick={() => {
-                router.push(`/profile/${user._id}`);
+                router.push(`/message/${user._id}`);
               }}
             >
               <div className="flex items-center gap-3 w-full">

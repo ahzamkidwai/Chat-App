@@ -19,7 +19,7 @@ const DirectMessages = () => {
     globalStyles.colors;
 
   const userId = useSelector((state: RootState) => state.user.userId);
-  console.log("userId userId : ", userId);
+
   const token = useSelector((state: RootState) => state.user.token);
   const router = useRouter();
   const [directMessages, setDirectMessages] = useState<any[]>([]);
@@ -42,12 +42,12 @@ const DirectMessages = () => {
         if (!response.ok) throw new Error("Failed to fetch direct messages");
 
         const data = await response.json();
-        console.log("Data after response : ", data);
+
         const list = data.map((dm: any) => {
           const otherParticipant = dm.participants.find(
             (p: any) => p._id !== userId
           );
-          console.log("Other Participants : ", otherParticipant);
+
           return {
             name: otherParticipant?.fullName || "Unknown User",
             phone: otherParticipant?.phoneNumber || "Unknown Phone",
@@ -63,6 +63,12 @@ const DirectMessages = () => {
             userUuid: otherParticipant._id,
           };
         });
+
+        // ✅ Sort by latest message first
+        list.sort(
+          (a: any, b: any) =>
+            new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+        );
 
         setDirectMessages(list);
       } catch (error) {
@@ -124,7 +130,7 @@ const DirectMessages = () => {
       {directMessages.map((dm, index) => {
         const isSender = dm.senderId === userId;
         const isHovered = hoveredIndex === index;
-        console.log("dm dm dm : ", dm);
+
         const dynamicColor = isHovered ? sidebarBg : sidebarText;
 
         return (
